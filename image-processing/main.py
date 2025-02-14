@@ -4,6 +4,8 @@ from tkinter import messagebox
 from PIL import Image, ImageTk, ImageOps, ImageEnhance
 from scipy.ndimage import gaussian_filter
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 def upload_image():
     global current_image, original_image
@@ -20,6 +22,7 @@ def upload_image():
             # Display image on the canvas
             canvas.create_image(0, 0, anchor=tk.NW, image=image_tk)
             canvas.image = image_tk  # Keep a reference to the image
+            update_histogram(current_image)  # Update histogram
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load image: {e}")
     else:
@@ -48,9 +51,9 @@ def reduce_noise():
         canvas.create_image(0, 0, anchor=tk.NW, image=denoised_image_tk)
         canvas.image = denoised_image_tk
         current_image = denoised_image  # Update current image
+        update_histogram(denoised_image)  # Update histogram
     else:
         messagebox.showinfo("Info", "No image to apply noise reduction")
-
 
 def convert_to_grayscale():
     global current_image
@@ -66,9 +69,9 @@ def convert_to_grayscale():
         canvas.create_image(0, 0, anchor=tk.NW, image=grayscale_image_tk)
         canvas.image = grayscale_image_tk  # Keep a reference to the image
         current_image = grayscale_image  # Update current image to grayscale
+        update_histogram(grayscale_image)  # Update histogram
     else:
         messagebox.showinfo("Info", "No image to convert")
-
 
 # Function to rotate the image by 90 degrees
 def rotate_image():
@@ -81,6 +84,7 @@ def rotate_image():
         canvas.create_image(0, 0, anchor=tk.NW, image=rotated_image_tk)
         canvas.image = rotated_image_tk
         current_image = rotated_image  # Update current image
+        update_histogram(rotated_image)  # Update histogram
     else:
         messagebox.showinfo("Info", "No image to rotate")
 
@@ -95,6 +99,7 @@ def invert_image():
         canvas.create_image(0, 0, anchor=tk.NW, image=inverted_image_tk)
         canvas.image = inverted_image_tk
         current_image = inverted_image  # Update current image
+        update_histogram(inverted_image)  # Update histogram
     else:
         messagebox.showinfo("Info", "No image to invert")
 
@@ -110,10 +115,39 @@ def adjust_brightness():
         canvas.create_image(0, 0, anchor=tk.NW, image=brightened_image_tk)
         canvas.image = brightened_image_tk
         current_image = brightened_image  # Update current image
+        update_histogram(brightened_image)  # Update histogram
     else:
         messagebox.showinfo("Info", "No image to adjust")
 
+# Function to update and show the histogram of the image
+def update_histogram(image):
+    # Convert the image to grayscale if it's not already
+    if image.mode != 'L':
+        image = image.convert("L")
+    
+    # Get the pixel values of the image
+    pixels = np.array(image).flatten()
 
+    # Close any open figures to save memory
+    plt.close('all')  # This closes all open figures
+
+    # Create new histogram figure
+    fig, ax = plt.subplots(figsize=(5, 4))
+    ax.hist(pixels, bins=256, range=(0, 255), color='gray', alpha=0.7)
+
+    # Add labels and title
+    ax.set_title("Histogram of Pixel Values")
+    ax.set_xlabel("Pixel Value")
+    ax.set_ylabel("Frequency")
+
+    # Clear the previous histogram before displaying a new one
+    for widget in frame_histogram.winfo_children():
+        widget.destroy()
+
+    # Embed the plot in the Tkinter window
+    canvas_histogram = FigureCanvasTkAgg(fig, master=frame_histogram)
+    canvas_histogram.get_tk_widget().pack()
+    canvas_histogram.draw()
 
 # Create the main window
 root = tk.Tk()
@@ -126,7 +160,6 @@ upload_button.pack(pady=10)
 # Create a button to convert the image to grayscale
 grayscale_button = tk.Button(root, text="Convert to Grayscale", command=convert_to_grayscale)
 grayscale_button.pack(pady=10)
-
 
 # Create a button to rotate the image by 90 degrees
 rotate_button = tk.Button(root, text="Rotate Image 90°", command=rotate_image)
@@ -144,10 +177,13 @@ brightness_button.pack(pady=10)
 noise_reduction_button = tk.Button(root, text="Reduce Noise", command=reduce_noise)
 noise_reduction_button.pack(pady=10)
 
-
 # Create a canvas to display the image
 canvas = tk.Canvas(root, width=250, height=250)
 canvas.pack()
+
+# Create a frame for displaying the histogram
+frame_histogram = tk.Frame(root)
+frame_histogram.pack(pady=20)
 
 # Global variables to store the current and original images
 current_image = None
