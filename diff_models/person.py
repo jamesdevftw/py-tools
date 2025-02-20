@@ -17,6 +17,9 @@ class Person:
     def eat(self):
         pass
 
+    def market_visit(self):
+        pass
+
 
     def set_age(self):
         self.age += 1

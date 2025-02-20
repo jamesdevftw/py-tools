@@ -6,9 +6,10 @@ import random
 
 import person
 import storage
+import market
 
 s1 = storage.Storage()
-
+m1 = market.Market(1, "Market 1")
 age_list = []
 food_list = []
 jobs = ["Engineer", "Farmer", "Teacher", "Artist", "Writer", "Scientist", "Lawyer", "Chef", "Athlete", "Musician"]
@@ -40,6 +41,7 @@ def loop(n):
 
 
         do_work()
+        market_visit()
         age_people()
 
         food['Raw_food'] += s1.get_raw_food()
@@ -68,5 +70,8 @@ def age_people():
 
 def do_work():
     s1.do_work()
+
+def market_visit():
+    s1.market_visit()
 
 main()

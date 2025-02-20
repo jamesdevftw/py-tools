@@ -62,3 +62,12 @@ class Storage:
             total_raw_food = sum(person.items.get("Raw_food", 0) for person in self.persons)
             print(f"Total Raw Food: {total_raw_food}")
             return total_raw_food
+        
+
+    def market_visit(self):
+        if self.persons:
+            for person in self.persons:
+                person.market_visit()
+        else:
+            print("Storage is empty.")
+
